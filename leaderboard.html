@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Leaderboard – Calm &amp; Focus</title>
+    <link rel="shortcut icon" href="relaxed.ico" type="image/x-icon">
+    <meta name="description"
+        content="Global and daily leaderboards for Calm & Focus brain training, reaction speed, and focus games.">
+    <meta name="theme-color" content="#141c2c">
+    <script>try { var t = localStorage.getItem('cnf-theme'); if (t) document.documentElement.dataset.theme = t } catch (e) { }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Figtree:wght@300..800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Top Actions Alignment & Truncation */
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+
+        #open-auth-btn {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 480px) {
+            #open-auth-btn {
+                max-width: 100px;
+                font-size: 0.8rem !important;
+                padding: 6px 10px !important;
+            }
+        }
+
+        /* Leaderboard Page Layout */
+        .lb-page-layout {
+            display: grid;
+            grid-template-columns: 30% 70%;
+            gap: 24px;
+            width: 100%;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .lb-page-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .lb-sidebar {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .lb-sidebar-title {
+            font-family: "DM Serif Display", Georgia, serif;
+            font-size: 1.25rem;
+            margin: 0 0 14px;
+            color: var(--sea);
+        }
+
+        .lb-mode-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .lb-mode-btn {
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: var(--surface-card);
+            color: var(--ink);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .lb-mode-btn:hover {
+            border-color: var(--sea);
+            background: var(--surface-hover);
+        }
+
+        .lb-mode-btn.active {
+            background: var(--sea);
+            color: #0d2822;
+            border-color: var(--sea);
+        }
+
+        .lb-main-view {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            min-height: 520px;
+        }
+
+        .lb-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .lb-title-group h2 {
+            font-family: "DM Serif Display", Georgia, serif;
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+        .lb-title-group p {
+            margin: 2px 0 0;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .timeframe-switch {
+            display: inline-flex;
+            background: var(--surface-card);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .timeframe-switch button {
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .timeframe-switch button.active {
+            background: var(--sea);
+            color: #0d2822;
+        }
+
+        /* Leaderboard Table Structure & Alignments */
+        .lb-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+
+        .lb-table th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .lb-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+            font-size: 0.95rem;
+            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Strict Column Allocations */
+        .lb-table th:nth-child(1),
+        .lb-table td:nth-child(1) {
+            width: 80px;
+            text-align: center;
+        }
+
+        .lb-table th:nth-child(2),
+        .lb-table td:nth-child(2) {
+            width: auto;
+            text-align: left;
+        }
+
+        .lb-table th:nth-child(3),
+        .lb-table td:nth-child(3) {
+            width: 150px;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .lb-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .lb-table tr.lb-me {
+            background: rgba(121, 196, 178, 0.12);
+            font-weight: 700;
+        }
+
+        /* Player Cell Container */
+        .player-cell-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .player-name-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .you-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--sea);
+            background: rgba(121, 196, 178, 0.18);
+            padding: 2px 6px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        /* Rank Badges */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.88rem;
+            background: var(--surface-card);
+        }
+
+        .rank-1 {
+            background: #ffd700;
+            color: #332200;
+        }
+
+        .rank-2 {
+            background: #c0c0c0;
+            color: #222;
+        }
+
+        .rank-3 {
+            background: #cd7f32;
+            color: #fff;
+        }
+
+        /* Auth Modal Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(8, 12, 20, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            position: relative;
+            transform: translateY(15px);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: var(--surface-card);
+            border: 1px solid var(--line);
+            color: var(--ink);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: grid;
+            place-items: center;
+        }
+
+        .auth-nav {
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .auth-nav button {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.1rem;
+            font-family: "DM Serif Display", Georgia, serif;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        .auth-nav button.active {
+            color: var(--sea);
+            border-bottom: 2px solid var(--sea);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .auth-form input {
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1.5px solid var(--line);
+            background: var(--surface-card);
+            color: var(--ink);
+            width: 100%;
+        }
+
+        .auth-form input:focus {
+            border-color: var(--sea);
+            outline: none;
+        }
+
+        .auth-status {
+            font-size: 0.88rem;
+            color: var(--rose);
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top-bar">
+        <a class="brand" href="index.html" aria-label="Calm &amp; Focus home">Calm<span>&amp;</span>Focus</a>
+        <div class="top-actions">
+            <button class="btn ghost" id="open-auth-btn" style="padding: 6px 16px; font-size: 0.88rem;">Login / Sign
+                Up</button>
+            <button class="theme-toggle" id="theme-btn" type="button" aria-label="Toggle theme">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5" />
+                    <path
+                        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                </svg>
+                <span>Theme</span>
+            </button>
+        </div>
+    </div>
+
+    <header class="hero">
+        <h1 class="main-heading">Global Leaderboard</h1>
+        <p>Compare your focus scores and reaction times against players worldwide.</p>
+    </header>
+
+    <main class="app-viewport">
+        <div class="lb-page-layout">
+            <aside class="lb-sidebar">
+                <h3 class="lb-sidebar-title">Games &amp; Modes</h3>
+                <ul class="lb-mode-list" id="mode-selector">
+                    <li><button class="lb-mode-btn active" data-mode="reflex">⚡ Reflex Speed <span>ms</span></button>
+                    </li>
+                    <li><button class="lb-mode-btn" data-mode="schulte">🎯 Schulte Grid <span>sec</span></button></li>
+                    <li><button class="lb-mode-btn" data-mode="stroop">🎨 Color Focus (Stroop) <span>pts</span></button>
+                    </li>
+                    <li><button class="lb-mode-btn" data-mode="seq">🧠 Sequence Memory <span>lvl</span></button></li>
+                    <li><button class="lb-mode-btn" data-mode="num">🔢 Number Span <span>digits</span></button></li>
+                    <li><button class="lb-mode-btn" data-mode="streak">🔥 Daily Streaks <span>days</span></button></li>
+                </ul>
+            </aside>
+
+            <section class="lb-main-view">
+                <div class="lb-header-bar">
+                    <div class="lb-title-group">
+                        <h2 id="current-mode-title">⚡ Visual Reflex Speed</h2>
+                        <p id="current-mode-desc">Fastest response times (lower is better)</p>
+                    </div>
+                    <div class="timeframe-switch" id="time-switch">
+                        <button class="active" data-tf="daily">Daily</button>
+                        <button data-tf="overall">Overall</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="lb-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Player</th>
+                                <th style="text-align: right;">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lb-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-card">
+            <button class="modal-close" id="close-auth-btn" aria-label="Close modal">✕</button>
+
+            <div id="modal-auth-content">
+                <div class="auth-nav">
+                    <button class="active" id="tab-login-btn">Log In</button>
+                    <button id="tab-signup-btn">Sign Up</button>
+                </div>
+
+                <form class="auth-form" id="form-login">
+                    <input type="email" id="login-email" placeholder="Email address" required>
+                    <input type="password" id="login-pass" placeholder="Password" required>
+                    <button class="btn" type="submit">Log In</button>
+                    <p class="auth-status" id="login-status"></p>
+                </form>
+
+                <form class="auth-form" id="form-signup" style="display: none;">
+                    <input type="text" id="signup-nick" placeholder="Public Nickname (3-15 chars)" required
+                        pattern="[A-Za-z0-9_]{3,15}">
+                    <input type="email" id="signup-email" placeholder="Email address" required>
+                    <input type="password" id="signup-pass" placeholder="Password (min 6 chars)" required minlength="6">
+                    <button class="btn" type="submit">Create Account</button>
+                    <p class="auth-status" id="signup-status"></p>
+                </form>
+            </div>
+
+            <div id="modal-user-content" style="display: none; text-align: center;">
+                <h3 style="font-family: 'DM Serif Display', Georgia, serif; margin-bottom: 8px;">Account Hub</h3>
+                <p class="tool-subtitle" id="logged-in-user-label" style="margin-bottom: 20px;"></p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn ghost" id="logout-btn"
+                        style="width: 100%; border-color: var(--rose); color: var(--rose);">Log Out</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="site.js"></script>
+    <script src="cnf.js"></script>
+
+    <script>
+        (function () {
+            'use strict';
+            var CFG = window.CNF_CONFIG || {};
+            var BASE = (CFG.supabaseUrl || '').replace(/\/$/, '');
+            var KEY = CFG.supabaseKey || '';
+
+            var tabLogin = document.getElementById('tab-login-btn');
+            var tabSignup = document.getElementById('tab-signup-btn');
+            var formLogin = document.getElementById('form-login');
+            var formSignup = document.getElementById('form-signup');
+            var authContent = document.getElementById('modal-auth-content');
+            var userContent = document.getElementById('modal-user-content');
+            var userLabel = document.getElementById('logged-in-user-label');
+            var openAuthBtn = document.getElementById('open-auth-btn');
+            var closeAuthBtn = document.getElementById('close-auth-btn');
+            var logoutBtn = document.getElementById('logout-btn');
+            var modal = document.getElementById('auth-modal');
+
+            if (tabLogin && tabSignup) {
+                tabLogin.addEventListener('click', function () {
+                    tabLogin.classList.add('active');
+                    tabSignup.classList.remove('active');
+                    formLogin.style.display = 'flex';
+                    formSignup.style.display = 'none';
+                });
+                tabSignup.addEventListener('click', function () {
+                    tabSignup.classList.add('active');
+                    tabLogin.classList.remove('active');
+                    formSignup.style.display = 'flex';
+                    formLogin.style.display = 'none';
+                });
+            }
+
+            function parseResponse(res) {
+                return res.text().then(function (text) {
+                    var data = {};
+                    try { data = text && text.trim() ? JSON.parse(text) : {}; } catch (e) { data = {}; }
+                    if (!res.ok) {
+                        throw new Error(data.msg || data.error_description || data.message || 'Request failed (' + res.status + ')');
+                    }
+                    return data;
+                });
+            }
+
+            function clearLocalCache() {
+                ['cnf-pb', 'cnf-hist', 'cnf-days', 'cnf-best-streak',
+                    'cnf-reflex-best', 'cnf-schulte-best', 'cnf-stroop-best',
+                    'cnf-seq-best', 'cnf-num-best'].forEach(function (k) { localStorage.removeItem(k); });
+            }
+
+            function authHeaders(token) {
+                return { 'apikey': KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+            }
+
+            function saveSession(token, refresh, user, email) {
+                var p = {};
+                try { p = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); } catch (e) { }
+                localStorage.setItem('cnf-sess', JSON.stringify({
+                    access_token: token,
+                    refresh_token: refresh,
+                    exp: p.exp || Math.floor(Date.now() / 1000) + 3600,
+                    uid: user.id,
+                    email: email
+                }));
+            }
+
+            function fetchCloudProfileData(token, userId) {
+                // builds this account's own cache (all-time bests, today's bests, streak) and drops the guest cache
+                if (typeof window.cnfLoginLoad === 'function') {
+                    return window.cnfLoginLoad(token, userId).catch(function (err) { console.error('Cloud cache load failed', err); });
+                }
+                return Promise.resolve();
+            }
+
+            function nickTaken(nick) {
+                return fetch(BASE + '/rest/v1/profiles?nickname=ilike.' + encodeURIComponent(nick) + '&select=user_id', {
+                    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+                }).then(parseResponse).then(function (rows) {
+                    return Array.isArray(rows) && rows.length > 0;
+                });
+            }
+
+            function getProfileNick(token, userId) {
+                return fetch(BASE + '/rest/v1/profiles?user_id=eq.' + userId + '&select=nickname', {
+                    headers: authHeaders(token)
+                }).then(parseResponse).then(function (rows) {
+                    return rows && rows[0] ? rows[0].nickname : null;
+                });
+            }
+
+            function createProfile(token, userId, nick) {
+                var h = authHeaders(token);
+                h.Prefer = 'return=minimal';
+                return fetch(BASE + '/rest/v1/profiles', {
+                    method: 'POST',
+                    headers: h,
+                    body: JSON.stringify({ user_id: userId, nickname: nick })
+                }).then(function (res) {
+                    if (res.ok) return nick;
+                    return res.text().then(function (t) {
+                        if (/profiles_pkey/.test(t)) {
+                            return getProfileNick(token, userId).then(function (n) { return n || nick; });
+                        }
+                        if (/nickname/i.test(t)) throw new Error('That nickname is already taken or invalid (3-20 letters, numbers or _).');
+                        throw new Error('Could not create profile: ' + t);
+                    });
+                });
+            }
+
+            function finishLogin(token, userId, nick, statusEl) {
+                localStorage.setItem('cnf-nick', nick);
+                localStorage.removeItem('cnf-pending-nick');
+                statusEl.textContent = 'Syncing profile...';
+                return fetchCloudProfileData(token, userId).then(function () {
+                    statusEl.textContent = 'Success! Reloading...';
+                    setTimeout(function () { location.reload(); }, 400);
+                });
+            }
+
+            formSignup.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var email = document.getElementById('signup-email').value.trim();
+                var pass = document.getElementById('signup-pass').value;
+                var nick = document.getElementById('signup-nick').value.trim();
+                var statusEl = document.getElementById('signup-status');
+
+                var submitBtn = formSignup.querySelector('button[type="submit"]');
+                if (submitBtn.disabled) return;
+                submitBtn.disabled = true;
+                statusEl.style.color = 'var(--sea)';
+                statusEl.textContent = 'Creating account...';
+
+                nickTaken(nick).then(function (taken) {
+                    if (taken) throw new Error('That nickname is already taken.');
+                    return fetch(BASE + '/auth/v1/signup', {
+                        method: 'POST',
+                        headers: { 'apikey': KEY, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, password: pass })
+                    }).then(parseResponse);
+                }).then(function (data) {
+                    if (!data.access_token) {
+                        localStorage.setItem('cnf-pending-nick', nick);
+                        statusEl.textContent = 'Check your email to confirm your account, then log in.';
+                        return;
+                    }
+                    saveSession(data.access_token, data.refresh_token, data.user, email);
+                    return createProfile(data.access_token, data.user.id, nick).then(function (savedNick) {
+                        return finishLogin(data.access_token, data.user.id, savedNick, statusEl);
+                    });
+                }).catch(function (err) {
+                    submitBtn.disabled = false;
+                    statusEl.style.color = 'var(--rose)';
+                    statusEl.textContent = err.message;
+                });
+            });
+
+            formLogin.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var email = document.getElementById('login-email').value.trim();
+                var pass = document.getElementById('login-pass').value;
+                var statusEl = document.getElementById('login-status');
+
+                var loginBtn = formLogin.querySelector('button[type="submit"]');
+                if (loginBtn.disabled) return;
+                loginBtn.disabled = true;
+                statusEl.style.color = 'var(--sea)';
+                statusEl.textContent = 'Logging in...';
+
+                fetch(BASE + '/auth/v1/token?grant_type=password', {
+                    method: 'POST',
+                    headers: { 'apikey': KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: pass })
+                }).then(parseResponse).then(function (data) {
+                    var token = data.access_token, user = data.user;
+                    saveSession(token, data.refresh_token, user, user.email || email);
+
+                    return fetch(BASE + '/rest/v1/profiles?user_id=eq.' + user.id + '&select=nickname', {
+                        headers: authHeaders(token)
+                    }).then(parseResponse).then(function (rows) {
+                        if (rows && rows[0] && rows[0].nickname) return rows[0].nickname;
+                        var nick = localStorage.getItem('cnf-pending-nick') ||
+                            (email.split('@')[0].replace(/[^A-Za-z0-9_]/g, '').slice(0, 12).padEnd(3, '0') +
+                                Math.floor(Math.random() * 900 + 100));
+                        return createProfile(token, user.id, nick);
+                    }).then(function (nick) {
+                        return finishLogin(token, user.id, nick, statusEl);
+                    });
+                }).catch(function (err) {
+                    loginBtn.disabled = false;
+                    statusEl.style.color = 'var(--rose)';
+                    statusEl.textContent = err.message;
+                });
+            });
+
+            function checkUserAuth() {
+                var nick = localStorage.getItem('cnf-nick');
+                var sess = localStorage.getItem('cnf-sess');
+                if (nick && sess) {
+                    openAuthBtn.textContent = '👤 ' + nick;
+                    if (authContent) authContent.style.display = 'none';
+                    if (userContent) userContent.style.display = 'block';
+                    if (userLabel) userLabel.textContent = 'Signed in as: ' + nick;
+                } else {
+                    openAuthBtn.textContent = 'Login / Sign Up';
+                    if (authContent) authContent.style.display = 'block';
+                    if (userContent) userContent.style.display = 'none';
+                }
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function () {
+                    if (typeof window.cnfLogoutClear === 'function') window.cnfLogoutClear();   // reset this account's cache + guest cache
+                    localStorage.removeItem('cnf-sess');
+                    localStorage.removeItem('cnf-nick');
+                    location.reload();
+                });
+            }
+
+            openAuthBtn.addEventListener('click', function () { modal.classList.add('active'); });
+            closeAuthBtn.addEventListener('click', function () { modal.classList.remove('active'); });
+            modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('active'); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') modal.classList.remove('active'); });
+
+            var currentMode = 'reflex';
+            var currentTimeframe = 'daily';
+
+            var MODE_INFO = {
+                reflex: { title: '⚡ Visual Reflex Speed', desc: 'Fastest response times (lower is better)', lowerIsBetter: true, unit: ' ms', fmt: function (v) { return Math.round(v); } },
+                schulte: { title: '🎯 Schulte Grid Focus', desc: 'Fastest matrix completion (lower is better)', lowerIsBetter: true, unit: ' s', fmt: function (v) { return (v / 1000).toFixed(1); } },
+                stroop: { title: '🎨 Color Focus (Stroop)', desc: 'Most correct answers in sequence', lowerIsBetter: false, unit: ' pts', fmt: function (v) { return Math.round(v); } },
+                seq: { title: '🧠 Sequence Memory', desc: 'Highest pattern level reached', lowerIsBetter: false, unit: ' lvl', fmt: function (v) { return Math.round(v); } },
+                num: { title: '🔢 Number Span Memory', desc: 'Maximum digits remembered', lowerIsBetter: false, unit: ' digits', fmt: function (v) { return Math.round(v); } },
+                streak: { title: '🔥 Active Day Streaks', desc: 'Consecutive daily activity', lowerIsBetter: false, unit: ' days', fmt: function (v) { return Math.round(v); } }
+            };
+
+            var modeBtns = document.querySelectorAll('#mode-selector button');
+            var tfBtns = document.querySelectorAll('#time-switch button');
+            var tableBody = document.getElementById('lb-table-body');
+            var titleEl = document.getElementById('current-mode-title');
+            var descEl = document.getElementById('current-mode-desc');
+
+            modeBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    modeBtns.forEach(function (b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    currentMode = btn.dataset.mode;
+                    updateHeader();
+                    renderLeaderboard();
+                });
+            });
+
+            tfBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    tfBtns.forEach(function (b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    currentTimeframe = btn.dataset.tf;
+                    renderLeaderboard();
+                });
+            });
+
+            function updateHeader() {
+                var info = MODE_INFO[currentMode];
+                if (info) {
+                    titleEl.textContent = info.title;
+                    descEl.textContent = info.desc;
+                }
+                var ts = document.getElementById('time-switch');
+                if (ts) ts.style.display = currentMode === 'streak' ? 'none' : '';  // streaks have no daily/overall
+            }
+
+            function escapeHtml(str) {
+                return String(str).replace(/[&<>"']/g, function (m) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+                });
+            }
+
+            function fetchCloudBoard(mode, timeframe) {
+                var lower = MODE_INFO[mode] && MODE_INFO[mode].lowerIsBetter;
+                var order = '&order=value.' + (lower ? 'asc' : 'desc') + '&limit=25';
+                var endpoint;
+                if (mode === 'streak') {
+                    endpoint = '/rest/v1/streaks?select=current_streak,profiles(nickname)&order=current_streak.desc&limit=25';
+                } else if (timeframe === 'daily') {
+                    // best score per player for today (UTC day, same as the server)
+                    endpoint = '/rest/v1/daily_scores?game=eq.' + mode + '&day=eq.' + new Date().toISOString().slice(0, 10) +
+                        '&select=value,profiles(nickname)' + order;
+                } else {
+                    endpoint = '/rest/v1/scores?game=eq.' + mode + '&select=value,profiles(nickname)' + order;
+                }
+
+                return fetch(BASE + endpoint, {
+                    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+                }).then(parseResponse).then(function (data) {
+                    if (!Array.isArray(data)) return [];
+                    return data.map(function (item) {
+                        return {
+                            name: (item.profiles && item.profiles.nickname) || 'Anonymous',
+                            score: mode === 'streak' ? item.current_streak : item.value
+                        };
+                    });
+                });
+            }
+
+            function displayRows(rows) {
+                if (!rows || rows.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted); padding: 24px;">No records submitted for this period yet. Be the first!</td></tr>';
+                    return;
+                }
+
+                var currentUser = localStorage.getItem('cnf-nick');
+                var info = MODE_INFO[currentMode];
+
+                tableBody.innerHTML = rows.map(function (row, idx) {
+                    var rank = idx + 1;
+                    var rankClass = rank <= 3 ? 'rank-' + rank : '';
+                    var isMe = currentUser && row.name.toLowerCase() === currentUser.toLowerCase();
+
+                    return '<tr class="' + (isMe ? 'lb-me' : '') + '">' +
+                        '<td><span class="rank-badge ' + rankClass + '">' + rank + '</span></td>' +
+                        '<td><div class="player-cell-content"><span class="player-name-text">' + escapeHtml(row.name) + '</span>' +
+                        (isMe ? '<span class="you-badge">(You)</span>' : '') + '</div></td>' +
+                        '<td style="text-align: right; font-weight: 700; color: var(--sea);">' + info.fmt(row.score) + info.unit + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            function renderLeaderboard() {
+                tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted);">Loading standings...</td></tr>';
+                if (!BASE || !KEY) {
+                    displayRows([]);
+                    return;
+                }
+                fetchCloudBoard(currentMode, currentTimeframe).then(displayRows).catch(function (err) {
+                    console.error('Leaderboard load failed', err);
+                    tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--rose); padding: 24px;">Could not load standings. Please try again later.</td></tr>';
+                });
+            }
+
+            window.renderLeaderboard = renderLeaderboard;
+
+            checkUserAuth();
+            renderLeaderboard();
+        })();
+    </script>
+</body>
+
+</html>
