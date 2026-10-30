@@ -9,10 +9,6 @@
         del: function (k) { try { localStorage.removeItem(k); } catch (e) { } }
     };
 
-    var TABS = ['reflex', 'focus', 'breathe', 'relief', 'sound', 'brain', 'bubbles', 'ground'];
-    var URLS = { "reflex": "index.html#reflex", "focus": "index.html#focus", "breathe": "index.html#breathe", "relief": "index.html#relief", "sound": "index.html#sound", "brain": "index.html#brain", "bubbles": "index.html#bubbles", "ground": "index.html#ground" };
-    var NAMES = { reflex: 'Reaction Time Test', focus: 'Schulte Table Focus Trainer', breathe: 'Guided Breathing Exercises', relief: 'Stress Relief & Thought Shredder', sound: 'Relaxing Sounds & Binaural Beats', brain: 'Brain Training Games', bubbles: 'Virtual Bubble Wrap Popper', ground: '5-4-3-2-1 Grounding Exercise' };
-
     function stopBreathSession() {
         breathRunning = false;
         clearTimeout(breathTimer);
@@ -26,38 +22,8 @@
         if (btn) btn.textContent = 'Start Breathing Session';
     }
 
-    function keyFromPath() {
-        var k = location.hash.replace('#', '');
-        return TABS.indexOf(k) > -1 ? k : null;
-    }
-
-    function applyRoute(key, scrollTop, userNav) {
-        var t = TABS.indexOf(key) > -1 ? key : 'reflex';
-        $$('section.tool-container').forEach(function (s) { s.classList.toggle('active', s.id === 't-' + t); });
-        $$('#main-tabs button').forEach(function (btn) {
-            var on = btn.dataset.t === t;
-            btn.setAttribute('aria-selected', on);
-            if (on && btn.scrollIntoView) { try { btn.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) { } }
-        });
-        if (t !== 'breathe') stopBreathSession();
-        if (userNav) {
-            document.title = NAMES[t] + ' – Calm & Focus';
-            var h = $('h1.main-heading'); if (h) h.textContent = NAMES[t];
-        }
-        if (scrollTop) window.scrollTo(0, 0);
-    }
-
-    $$('#main-tabs button').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var t = btn.dataset.t;
-            try { history.pushState({ t: t }, '', URLS[t]); } catch (e) { try { location.hash = t; } catch (e2) { } }
-            applyRoute(t, true, true);
-        });
-    });
-    window.addEventListener('popstate', function () { applyRoute(keyFromPath() || location.hash.replace('#', ''), true, true); });
-    window.addEventListener('hashchange', function () { applyRoute(location.hash.replace('#', ''), true, true); });
-
     /* --- 1. REFLEX TIMER LOGIC --- */
+    if ($('#reflex-pad')) {
     var reflexState = 'idle', reflexTimeout, reflexStartTime;
     var reflexTimes = [], reflexBest = +store.get('cnf-reflex-best') || 0;
     var reflexPad = $('#reflex-pad');
@@ -118,7 +84,10 @@
     });
     updateReflexStats();
 
+    }
+
     /* --- 2. SCHULTE FOCUS GRID LOGIC --- */
+    if ($('#schulte-board')) {
     var schulteTarget = 1, schulteTimer = null, schulteElapsed = 0;
     var schulteBest = +store.get('cnf-schulte-best') || 0;
 
@@ -175,6 +144,8 @@
     $('#schulte-reset').addEventListener('click', initSchulteGrid);
     initSchulteGrid();
 
+    }
+
     /* --- 3. GUIDED BREATHING ENGINE --- */
     var breathPatterns = {
         box: [['Breathe In', 4, 1], ['Hold Breath', 4, 1], ['Breathe Out', 4, 0.6], ['Hold', 4, 0.6]],
@@ -182,6 +153,7 @@
         calm: [['Breathe In', 5, 1], ['Breathe Out', 5, 0.6]]
     };
     var activePattern = 'box', breathTimer = null, breathRunning = false;
+    if ($('#breath-toggle')) {
     var breathingOrb = $('#breathing-orb');
 
     function runBreathStep(index) {
@@ -219,6 +191,8 @@
         });
     });
 
+    }
+
     /* --- 4. STRESS RELIEF & THOUGHT SHREDDER --- */
     var stressTasks = [
         'Unclench your jaw and drop shoulders away from your ears.',
@@ -232,7 +206,7 @@
     ];
 
     var taskContainer = $('#stress-tasks');
-    stressTasks.forEach(function (taskText) {
+    if (taskContainer) stressTasks.forEach(function (taskText) {
         var li = document.createElement('li');
         li.innerHTML = '<label><input type="checkbox"><span></span></label>';
         li.querySelector('span').textContent = taskText;
@@ -243,7 +217,7 @@
         taskContainer.appendChild(li);
     });
 
-    $('#shred-btn').addEventListener('click', function () {
+    if ($('#shred-btn')) $('#shred-btn').addEventListener('click', function () {
         var input = $('#thought-input');
         if (!input.value.trim()) {
             $('#shred-status').textContent = 'Please type a thought first.';
@@ -265,7 +239,7 @@
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             masterGain = audioCtx.createGain();
-            masterGain.gain.value = ($('#master-vol').value / 100) * 0.6;
+            var mv = $('#master-vol'); masterGain.gain.value = ((mv ? mv.value : 40) / 100) * 0.6;
             masterGain.connect(audioCtx.destination);
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -406,7 +380,7 @@
         });
     });
 
-    $('#master-vol').addEventListener('input', function (e) {
+    if ($('#master-vol')) $('#master-vol').addEventListener('input', function (e) {
         if (masterGain) masterGain.gain.value = (e.target.value / 100) * 0.6;
     });
 
@@ -417,7 +391,7 @@
         });
     });
 
-    $('#stop-sounds').addEventListener('click', function () {
+    if ($('#stop-sounds')) $('#stop-sounds').addEventListener('click', function () {
         Object.keys(activeAudioSources).forEach(function (k) { toggleAudioStream(k, false); });
     });
 
@@ -521,7 +495,7 @@
         next();
     }
 
-    $('#seq-start').addEventListener('click', function () {
+    if ($('#seq-start')) $('#seq-start').addEventListener('click', function () {
         seqPattern = [Math.floor(Math.random() * 9)];
         seqStep = 0;
         $('#seq-level').textContent = seqPattern.length;
@@ -563,12 +537,13 @@
     var colorMap = { red: '#f87171', blue: '#60a5fa', green: '#4ade80', yellow: '#facc15' };
     var stroopWordColor = '', stroopScore = 0, stroopBest = +store.get('cnf-stroop-best') || 0;
 
-    $('#stroop-best').textContent = stroopBest;
+    if ($('#stroop-best')) $('#stroop-best').textContent = stroopBest;
 
     function nextStroop() {
         var text = colors[Math.floor(Math.random() * colors.length)];
         stroopWordColor = colors[Math.floor(Math.random() * colors.length)];
         var el = $('#stroop-word');
+        if (!el) return;
         el.textContent = text.toUpperCase();
         el.style.color = colorMap[stroopWordColor];
     }
@@ -659,9 +634,9 @@
         }
     }
 
-    $('#num-start').addEventListener('click', startNumRound);
-    $('#num-submit').addEventListener('click', submitNum);
-    $('#num-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submitNum(); } });
+    if ($('#num-start')) $('#num-start').addEventListener('click', startNumRound);
+    if ($('#num-submit')) $('#num-submit').addEventListener('click', submitNum);
+    if ($('#num-input')) $('#num-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submitNum(); } });
 
     /* --- 7. BUBBLE WRAP LOGIC --- */
     var totalPopped = 0, remainingBubbles = 0;
@@ -706,7 +681,7 @@
             })();
         }
     }
-    populateBubbleGrid();
+    if (bubbleGrid) populateBubbleGrid();
 
     /* --- 8. MIND REFRESH 5-4-3-2-1 GROUNDING --- */
     var groundingSteps = [
@@ -718,7 +693,7 @@
     ];
     var groundIndex = -1;
 
-    $('#ground-btn').addEventListener('click', function () {
+    if ($('#ground-btn')) $('#ground-btn').addEventListener('click', function () {
         groundIndex++;
         if (groundIndex >= 0 && groundIndex < groundingSteps.length) {
             $('#ground-card').textContent = groundingSteps[groundIndex][0];
@@ -732,6 +707,4 @@
         }
     });
 
-    // Initial Route Execution
-    applyRoute(keyFromPath() || document.body.dataset.tool, false, !!keyFromPath());
 })();

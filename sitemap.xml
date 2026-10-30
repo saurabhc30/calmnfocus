@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://calmnfocus.site/</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://calmnfocus.site/privacy.html</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://calmnfocus.site/terms.html</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://calmnfocus.site/contact.html</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://calmnfocus.site/about.html</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://calmnfocus.site/leaderboard.html</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://calmnfocus.site/</loc></url>
+  <url><loc>https://calmnfocus.site/reaction-time-test.html</loc></url>
+  <url><loc>https://calmnfocus.site/zen-pomodoro-timer.html</loc></url>
+  <url><loc>https://calmnfocus.site/schulte-table.html</loc></url>
+  <url><loc>https://calmnfocus.site/breathing-exercises.html</loc></url>
+  <url><loc>https://calmnfocus.site/5-4-3-2-1-grounding-exercise.html</loc></url>
+  <url><loc>https://calmnfocus.site/thought-shredder.html</loc></url>
+  <url><loc>https://calmnfocus.site/stress-relief-tasks.html</loc></url>
+  <url><loc>https://calmnfocus.site/relaxing-sounds.html</loc></url>
+  <url><loc>https://calmnfocus.site/pebble-stacking-game.html</loc></url>
+  <url><loc>https://calmnfocus.site/zen-sand-garden.html</loc></url>
+  <url><loc>https://calmnfocus.site/bubble-wrap-popper.html</loc></url>
+  <url><loc>https://calmnfocus.site/sequence-memory-test.html</loc></url>
+  <url><loc>https://calmnfocus.site/stroop-test.html</loc></url>
+  <url><loc>https://calmnfocus.site/number-memory-test.html</loc></url>
 </urlset>

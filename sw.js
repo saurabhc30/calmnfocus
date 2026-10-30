@@ -8,7 +8,6 @@ var ASSETS = [
   "app.js",
   "config.js",
   "manifest.webmanifest",
-  "icon-192.png"
 ];
 
 self.addEventListener('install', function (e) {

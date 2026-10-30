@@ -1,0 +1,84 @@
+/* mobile.css — load AFTER style.css.
+   Fixes: hidden horizontal tool tabs, cramped Relaxing Sounds cards, Bubble Wrap grid.
+   Selectors match the class names in index.html; if style.css uses different
+   widths on the same elements, adjust the values here (they are written to win). */
+
+/* ---------- page heading: style.css only styles h2.tool-title, the pages now use h1 ---------- */
+h1.tool-title { font-family: "DM Serif Display", Georgia, serif; font-weight: 400;
+  font-size: clamp(1.45rem, 6vw, 2.1rem); margin: 0 0 8px; }
+
+/* ---------- hub groups + related links ---------- */
+.tool-group { margin: 24px 0 2px; font-size: 1.05rem; text-align: left; color: var(--muted); }
+.tool-group:first-of-type { margin-top: 14px; }
+.related { margin-top: 18px; font-size: .95rem; }
+.related a { white-space: nowrap; }
+
+/* ---------- tool menu button: hidden on desktop ---------- */
+.tools-menu-btn { display: none; }
+
+/* ---------- tool tiles (hub + "More free tools") ---------- */
+.tool-cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.tool-cards a { display: flex; flex-direction: column; gap: 4px; min-height: 76px; }
+
+/* ---------- MOBILE ---------- */
+@media (max-width: 767px) {
+
+  /* 1) all tools reachable without sideways scrolling */
+  .tabs-wrapper { padding-inline: 12px; }
+  .tools-menu-btn {
+    display: flex; width: 100%; align-items: center; justify-content: space-between;
+    gap: 10px; min-height: 48px; padding: 10px 16px; border-radius: 14px;
+    border: 1px solid var(--border, rgba(127,127,127,.35));
+    background: var(--card, var(--surface, transparent)); color: inherit;
+    font: inherit; font-weight: 700; cursor: pointer;
+  }
+  .tools-menu-btn .tm-all { font-size: .82rem; font-weight: 600; opacity: .75; white-space: nowrap; }
+
+  .tabs-list {
+    display: none;                       /* collapsed until the menu button is tapped */
+    overflow: visible; flex-wrap: wrap; scroll-snap-type: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0 0; padding: 0;
+  }
+  .tabs-list.open { display: grid; }
+  .tabs-list button {
+    width: 100%; min-height: 48px; white-space: normal; text-align: left;
+    flex: none; padding: 10px 12px; line-height: 1.25;
+  }
+
+  /* 2) Relaxing Sounds */
+  #sound-presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  #sound-presets .btn { width: 100%; min-height: 46px; white-space: normal; }
+  .sound-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%;
+  }
+  .sound-card {
+    min-height: 60px; width: 100%; padding: 10px; font-size: .95rem; line-height: 1.2;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .sound-card[aria-pressed="true"] { outline: 2px solid var(--accent, #3a8a77); outline-offset: -2px; }
+  .volume-control { display: flex; align-items: center; gap: 12px; width: 100%; }
+  .volume-control input[type="range"] { flex: 1; min-width: 0; height: 32px; }
+
+  /* 3) Bubble Wrap */
+  .tool-container .bubble-grid {
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px;
+    width: 100%; max-width: 100%; margin-inline: auto; overflow: hidden;
+    touch-action: manipulation; -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tool-container .bubble-grid > * {
+    width: 100%; height: auto; min-width: 0; aspect-ratio: 1 / 1; border-radius: 50%;
+  }
+
+  /* 4) general mobile touch comfort */
+  .btn-row { flex-wrap: wrap; justify-content: center; }
+  .tool-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tool-cards a { padding: 12px; }
+  .tool-cards a span { font-size: .8rem; }
+}
+
+@media (max-width: 380px) {
+  .tool-container .bubble-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .tool-cards { grid-template-columns: 1fr; }
+}
